@@ -42,7 +42,7 @@ extension FileTranslator {
         isNullable: Bool,
         allowedValues: [AnyCodable]
     ) throws -> Declaration {
-        let cases: [(String, LiteralDescription)] = try allowedValues.map(\.value)
+        var cases: [(String, LiteralDescription)] = try allowedValues.map(\.value)
             .map { anyValue in
                 switch backingType {
                 case .string:
@@ -68,12 +68,13 @@ extension FileTranslator {
                     return (caseName, .int(rawValue))
                 }
             }
+        cases.append(("unknownGenerated", .string("unknownGenerated")))
         let baseConformance: String
         switch backingType {
         case .string: baseConformance = Constants.RawEnum.baseConformanceString
         case .integer: baseConformance = Constants.RawEnum.baseConformanceInteger
         }
-        let conformances = [baseConformance] + Constants.RawEnum.conformances
+        let conformances = [baseConformance] + Constants.RawEnum.conformances + ["UnknownGeneratable"]
         return try translateRawRepresentableEnum(
             typeName: typeName,
             conformances: conformances,
